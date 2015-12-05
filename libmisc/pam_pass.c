@@ -2,6 +2,7 @@
  * Copyright (c) 1997 - 1999, Marek Michałkiewicz
  * Copyright (c) 2001 - 2005, Tomasz Kłoczko
  * Copyright (c) 2008       , Nicolas François
+ * Copyright (c) 2015       , Mattias Andrée
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,22 +43,59 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <sys/types.h>
 #include "defines.h"
 #include "pam_defs.h"
 #include "prototypes.h"
+#include "xgetpass.h"
+
+static int xgetpass_conv (int num_msg, const struct pam_message **msg,
+			  struct pam_response **resp, void *appdata_ptr)
+{
+	struct pam_response *response;
+	static int first_enter = 0;
+	int current;
+	int saved_errno;
+
+	if ((num_msg != 1) || (msg[0]->msg_style != PAM_PROMPT_ECHO_OFF))
+		return conv.conv (num_msg, msg, resp, appdata_ptr);
+
+	response = calloc((size_t)1, sizeof(struct pam_response));
+	if (response == NULL) {
+		return PAM_CONV_ERR;
+	}
+
+	current = strchr(msg[0]->msg, '(') != NULL;
+	first_enter ^= !current;
+	response->resp_retcode = 0;
+	response->resp = xgetpass (msg[0]->msg, first_enter & !current);
+	if (response->resp == NULL) {
+		saved_errno = errno;
+		free(response);
+		errno = saved_errno;
+		return PAM_CONV_ERR;
+	}
+
+	*resp = response;
+	return PAM_SUCCESS;
+}
+
 
 void do_pam_passwd (const char *user, bool silent, bool change_expired)
 {
 	pam_handle_t *pamh = NULL;
 	int flags = 0, ret;
+	struct pam_conv conv_proper = conv;
+
+	conv_proper.conv = xgetpass_conv;
 
 	if (silent)
 		flags |= PAM_SILENT;
 	if (change_expired)
 		flags |= PAM_CHANGE_EXPIRED_AUTHTOK;
 
-	ret = pam_start ("passwd", user, &conv, &pamh);
+	ret = pam_start ("passwd", user, &conv_proper, &pamh);
 	if (ret != PAM_SUCCESS) {
 		fprintf (stderr,
 			 _("passwd: pam_start() failed, error %d\n"), ret);

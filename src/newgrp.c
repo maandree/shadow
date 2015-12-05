@@ -3,6 +3,7 @@
  * Copyright (c) 1996 - 2000, Marek Michałkiewicz
  * Copyright (c) 2001 - 2006, Tomasz Kłoczko
  * Copyright (c) 2007 - 2008, Nicolas François
+ * Copyright (c) 2015       , Mattias Andrée
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,6 +43,7 @@
 #include "defines.h"
 #include "getdef.h"
 #include "prototypes.h"
+#include "xgetpass.h"
 /*@-exitarg@*/
 #include "exitcodes.h"
 
@@ -171,7 +173,7 @@ static void check_perms (const struct group *grp,
 		 * get the password from her, and set the salt for
 		 * the decryption from the group file.
 		 */
-		cp = getpass (_("Password: "));
+		cp = xgetpass (_("Password: "), 0);
 		if (NULL == cp) {
 			goto failure;
 		}

@@ -3,6 +3,7 @@
  * Copyright (c) 1996 - 2000, Marek Michałkiewicz
  * Copyright (c) 2001 - 2006, Tomasz Kłoczko
  * Copyright (c) 2007 - 2011, Nicolas François
+ * Copyright (c) 2015       , Mattias Andrée
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +47,7 @@
 #include "groupio.h"
 #include "nscd.h"
 #include "prototypes.h"
+#include "xgetpass.h"
 #ifdef SHADOWGRP
 #include "sgroupio.h"
 #endif
@@ -909,14 +911,14 @@ static void change_passwd (struct group *gr)
 	printf (_("Changing the password for group %s\n"), group);
 
 	for (retries = 0; retries < RETRIES; retries++) {
-		cp = getpass (_("New Password: "));
+		cp = xgetpass (_("New Password: "), 1);
 		if (NULL == cp) {
 			exit (1);
 		}
 
 		STRFCPY (pass, cp);
 		strzero (cp);
-		cp = getpass (_("Re-enter new password: "));
+		cp = xgetpass (_("Re-enter new password: "), 0);
 		if (NULL == cp) {
 			exit (1);
 		}

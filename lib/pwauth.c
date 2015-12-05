@@ -3,6 +3,7 @@
  * Copyright (c) 1996 - 2000, Marek Michałkiewicz
  * Copyright (c) 2003 - 2006, Tomasz Kłoczko
  * Copyright (c) 2008 - 2009, Nicolas François
+ * Copyright (c) 2015       , Mattias Andrée
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,6 +46,7 @@
 #include "defines.h"
 #include "pwauth.h"
 #include "getdef.h"
+#include "xgetpass.h"
 #ifdef SKEY
 #include <skey.h>
 #endif
@@ -161,7 +163,7 @@ int pw_auth (const char *cipher,
 #endif
 
 		snprintf (prompt, sizeof prompt, cp, user);
-		clear = getpass (prompt);
+		clear = xgetpass (prompt, 0);
 		if (NULL == clear) {
 			static char c[1];
 
@@ -194,7 +196,7 @@ int pw_auth (const char *cipher,
 	 * -- AR 8/22/1999
 	 */
 	if ((0 != retval) && ('\0' == input[0]) && use_skey) {
-		clear = getpass (prompt);
+		clear = xgetpass (prompt, 0);
 		if (NULL == clear) {
 			static char c[1];
 

@@ -3,6 +3,7 @@
  * Copyright (c) 1996 - 2000, Marek Michałkiewicz
  * Copyright (c) 2001 - 2006, Tomasz Kłoczko
  * Copyright (c) 2007 - 2011, Nicolas François
+ * Copyright (c) 2015       , Mattias Andrée
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +56,7 @@
 #include "pwauth.h"
 #include "pwio.h"
 #include "shadowio.h"
+#include "xgetpass.h"
 
 /*
  * exit status values
@@ -237,7 +239,7 @@ static int new_password (const struct passwd *pw)
 	 */
 
 	if (!amroot && ('\0' != crypt_passwd[0])) {
-		clear = getpass (_("Old password: "));
+		clear = xgetpass (_("Old password: "), 1);
 		if (NULL == clear) {
 			return -1;
 		}
@@ -312,7 +314,7 @@ static int new_password (const struct passwd *pw)
 
 	warned = false;
 	for (i = getdef_num ("PASS_CHANGE_TRIES", 5); i > 0; i--) {
-		cp = getpass (_("New password: "));
+		cp = xgetpass (_("New password: "), 1);
 		if (NULL == cp) {
 			memzero (orig, sizeof orig);
 			return -1;
@@ -339,7 +341,7 @@ static int new_password (const struct passwd *pw)
 			warned = true;
 			continue;
 		}
-		cp = getpass (_("Re-enter new password: "));
+		cp = xgetpass (_("Re-enter new password: "), 0);
 		if (NULL == cp) {
 			memzero (orig, sizeof orig);
 			return -1;

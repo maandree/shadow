@@ -3,6 +3,7 @@
  * Copyright (c) 1996 - 2000, Marek Michałkiewicz
  * Copyright (c) 2002 - 2006, Tomasz Kłoczko
  * Copyright (c) 2007 - 2010, Nicolas François
+ * Copyright (c) 2015       , Mattias Andrée
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,6 +44,7 @@
 #include "getdef.h"
 #include "prototypes.h"
 #include "pwauth.h"
+#include "xgetpass.h"
 /*@-exitarg@*/
 #include "exitcodes.h"
 
@@ -202,10 +204,10 @@ static RETSIGTYPE catch_signals (unused int sig)
 		 */
 
 		/* get a password for root */
-		cp = getpass (_(
+		cp = xgetpass (_(
 "\n"
 "Type control-d to proceed with normal startup,\n"
-"(or give root password for system maintenance):"));
+"(or give root password for system maintenance): "), 0);
 		/*
 		 * XXX - can't enter single user mode if root password is
 		 * empty.  I think this doesn't happen very often :-). But

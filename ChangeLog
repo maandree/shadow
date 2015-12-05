@@ -1,3 +1,13 @@
+2015-12-05  Mattias Andrée  <maandree@member.fsf.org>
+
+	* lib/xgetpass.c: Add ability to use libpassphrase>=1449331105 instead of getpass.
+	* libmisc/pam_pass.c: Use xgetpass instead of misc_conv when entering (not retyping) the new password.
+	* lib/pwauth.c: Replace getpass with xgetpass.
+	* src/gpasswd.c: Likewise.
+	* src/newgrp.c: Likewise.
+	* src/passwd.c: Likewise.
+	* src/sulogin.c: Likewise.
+
 2014-05-09  Christian Perrier  <bubulle@debian.org>
 
 	* Include patches only included in Debian for 4.2

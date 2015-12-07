@@ -32,13 +32,16 @@
 #ident "$Id$"
 
 #include <unistd.h>
-#include <passphrase.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdio.h>
+#ifdef USE_LIBPASSPHRASE
+# include <passphrase.h>
+# include <fcntl.h>
+# include <errno.h>
+# include <stdio.h>
+#endif
 
 char *xgetpass (const char *prompt, int is_new)
 {
+#ifdef USE_LIBPASSPHRASE
 	int fd, saved_errno;
 	char *pass;
 
@@ -58,10 +61,9 @@ char *xgetpass (const char *prompt, int is_new)
 	passphrase_reenable_echo1 (fd);
 	errno = saved_errno;
 	return pass;
-
-	/*
+#else
 	return getpass (prompt);
 	(void) is_new;
-	*/
+#endif
 }
 

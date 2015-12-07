@@ -1,3 +1,8 @@
+2015-12-07  Mattias Andrée  <maandree@member.fsf.org>
+
+	* lib/xgetpass.c: Make libpassphrase optional.
+	* configure.in: Likewise.
+
 2015-12-05  Mattias Andrée  <maandree@member.fsf.org>
 
 	* lib/xgetpass.c: Add ability to use libpassphrase>=1449331105 instead of getpass.

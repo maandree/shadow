@@ -253,6 +253,9 @@ AC_ARG_WITH(audit,
 AC_ARG_WITH(libpam,
 	[AC_HELP_STRING([--with-libpam], [use libpam for PAM support @<:@default=yes if found@:>@])],
 	[with_libpam=$withval], [with_libpam=maybe])
+AC_ARG_WITH(libpassphrase,
+	[AC_HELP_STRING([--with-libpassphrase], [use libpassphrase support @<:@default=yes if found@:>@])],
+	[with_libpassphrase=$withval], [with_libpassphrase=maybe])
 AC_ARG_WITH(selinux,
 	[AC_HELP_STRING([--with-selinux], [use SELinux support @<:@default=yes if found@:>@])],
 	[with_selinux=$withval], [with_selinux=maybe])
@@ -581,6 +584,52 @@ else
 	AC_MSG_RESULT(yes)
 fi
 
+AC_SUBST(LIBPASSPHRASE)
+if test "$with_libpassphrase" != "no"; then
+	dnl passphrase_read has always existed
+	AC_CHECK_LIB(passphrase, passphrase_read,
+	             [passphrase_lib="yes"], [passphrase_lib="no"])
+	if test "$passphrase_lib$with_libpassphrase" = "noyes" ; then
+		AC_MSG_ERROR(libpassphrase not found)
+	fi
+
+	LIBPASSPHRASE="-lpassphrase"
+	passphrase_read2_function="no"
+	dnl passphrase_read2 was, along with other used functions, introduced in libpassphrase=1449331105
+
+	AC_CHECK_LIB(passphrase, passphrase_read2,
+	             [passphrase_read2_function="yes"], [])
+
+	if test "$passphrase_read2_function$with_libpassphrase" = "noyes" ; then
+		AC_MSG_ERROR(Only version 1449331105 and later of libpassphrase are supported)
+	fi
+
+	passphrase_header_found=no
+	AC_CHECK_HEADERS(passphrase.h,
+	                 [ passphrase_header_found=yes ; break ], [],
+	                 [ #include <passphrase.h> ] )
+	if test "$passphrase_header_found$with_libpassphrase" = "noyes" ; then
+	                AC_MSG_ERROR(libpassphrase header not found)
+	fi
+
+	if test "$passphrase_lib$passphrase_header_found$passphrase_read2_function" = "yesyesyes" ; then
+		with_libpassphrase="yes"
+	else
+		with_libpassphrase="no"
+		unset LIBPASSPHRASE
+	fi
+fi
+
+if test "$with_libpassphrase" = "yes"; then
+	save_libs="$LIBS"
+	LIBS="$LIBS $LIBPASSPHRASE"
+
+	AC_DEFINE(USE_LIBPASSPHRASE, 1, [Define to support libpassphrase])
+	AM_CONDITIONAL(USE_LIBPASSPHRASE, [true])
+else
+	AM_CONDITIONAL(USE_LIBPASSPHRASE, [false])
+fi
+
 if test "$enable_acct_tools_setuid" != "no"; then
 	if test "$with_libpam" != "yes"; then
 		if test "$enable_acct_tools_setuid" = "yes"; then
@@ -670,6 +719,7 @@ echo
 echo "	auditing support:		$with_audit"
 echo "	CrackLib support:		$with_libcrack"
 echo "	PAM support:			$with_libpam"
+echo "	libpassphrase support:		$with_libpassphrase"
 if test "$with_libpam" = "yes"; then
 echo "	suid account management tools:	$enable_acct_tools_setuid"
 fi
